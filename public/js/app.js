@@ -78,7 +78,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 更新导航按钮状态
     function updateNavigationButtons() {
         prevButton.disabled = currentQuestionIndex === 0;
-        nextButton.disabled = currentQuestionIndex === questions.length - 1 || answers[currentQuestionIndex] === null;
+        // 只有当前题目已答且不是最后一题时，下一题按钮才可用
+        nextButton.disabled = answers[currentQuestionIndex] === null;
+        if (currentQuestionIndex === questions.length - 1) {
+            nextButton.textContent = '完成测试';
+            nextButton.disabled = answers[currentQuestionIndex] === null;
+        } else {
+            nextButton.textContent = '下一题';
+        }
     }
 
     // 显示当前问题
@@ -207,21 +214,14 @@ document.addEventListener('DOMContentLoaded', () => {
         answers[currentQuestionIndex] = parseInt(value);
         updateProgress();
         updateAnswerGrid();
-        
-        // 如果不是最后一题，自动前进到下一题
-        if (currentQuestionIndex < questions.length - 1) {
-            currentQuestionIndex++;
-            showQuestion();
-        } else {
-            // 检查是否所有问题都已回答
-            if (!answers.includes(null)) {
-                progressBar.style.width = '100%';
-                progressText.textContent = '100%';
-                setTimeout(showResult, 100);
-            }
-        }
-        
         updateNavigationButtons();
+        
+        // 如果是最后一题且所有题目都已回答，显示结果
+        if (currentQuestionIndex === questions.length - 1 && !answers.includes(null)) {
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
+            setTimeout(showResult, 100);
+        }
     }
 
     // 事件监听器
@@ -247,9 +247,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextButton.addEventListener('click', () => {
-        if (currentQuestionIndex < questions.length - 1 && answers[currentQuestionIndex] !== null) {
-            currentQuestionIndex++;
-            showQuestion();
+        if (answers[currentQuestionIndex] !== null) {
+            if (currentQuestionIndex === questions.length - 1) {
+                // 如果是最后一题，显示结果
+                if (!answers.includes(null)) {
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '100%';
+                    setTimeout(showResult, 100);
+                }
+            } else {
+                // 否则前进到下一题
+                currentQuestionIndex++;
+                showQuestion();
+            }
         }
     });
 
