@@ -10,17 +10,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressText = document.getElementById('progress-text');
     const restartButton = document.getElementById('restart-test');
     const shareButton = document.getElementById('share-result');
+    const prevButton = document.getElementById('prev-question');
+    const nextButton = document.getElementById('next-question');
+    const answerGrid = document.querySelector('.answer-grid');
 
     // 状态变量
     let currentQuestionIndex = 0;
-    let answers = [];
+    let answers = new Array(questions.length).fill(null);
+
+    // 初始化答题格子
+    function initAnswerGrid() {
+        answerGrid.innerHTML = '';
+        for (let i = 0; i < questions.length; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'answer-cell';
+            cell.textContent = i + 1;
+            cell.addEventListener('click', () => {
+                if (answers[i] !== null) {
+                    goToQuestion(i);
+                }
+            });
+            answerGrid.appendChild(cell);
+        }
+        updateAnswerGrid();
+    }
+
+    // 更新答题格子状态
+    function updateAnswerGrid() {
+        const cells = answerGrid.children;
+        for (let i = 0; i < cells.length; i++) {
+            cells[i].classList.remove('answered', 'current');
+            if (answers[i] !== null) {
+                cells[i].classList.add('answered');
+            }
+            if (i === currentQuestionIndex) {
+                cells[i].classList.add('current');
+            }
+        }
+    }
 
     // 初始化测试
     function initTest() {
         currentQuestionIndex = 0;
-        answers = [];
+        answers = new Array(questions.length).fill(null);
         showScreen(welcomeScreen);
         updateProgress();
+        initAnswerGrid();
+        updateNavigationButtons();
     }
 
     // 显示指定屏幕
@@ -33,9 +69,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 更新进度条
     function updateProgress() {
-        const progress = (currentQuestionIndex / questions.length) * 100;
+        const answeredCount = answers.filter(a => a !== null).length;
+        const progress = (answeredCount / questions.length) * 100;
         progressBar.style.width = `${progress}%`;
         progressText.textContent = `${Math.round(progress)}%`;
+    }
+
+    // 更新导航按钮状态
+    function updateNavigationButtons() {
+        prevButton.disabled = currentQuestionIndex === 0;
+        nextButton.disabled = currentQuestionIndex === questions.length - 1 || answers[currentQuestionIndex] === null;
     }
 
     // 显示当前问题
@@ -45,6 +88,23 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3>问题 ${currentQuestionIndex + 1}/${questions.length}</h3>
             <p>${question.text}</p>
         `;
+        
+        // 重置所有选项按钮的状态
+        optionButtons.forEach(button => {
+            button.classList.remove('selected');
+            if (answers[currentQuestionIndex] === parseInt(button.dataset.value)) {
+                button.classList.add('selected');
+            }
+        });
+
+        updateAnswerGrid();
+        updateNavigationButtons();
+    }
+
+    // 跳转到指定问题
+    function goToQuestion(index) {
+        currentQuestionIndex = index;
+        showQuestion();
     }
 
     // 计算结果
@@ -144,31 +204,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 处理答案选择
     function handleAnswer(value) {
-        answers.push(parseInt(value));
-        currentQuestionIndex++;
+        answers[currentQuestionIndex] = parseInt(value);
+        updateProgress();
+        updateAnswerGrid();
         
-        if (currentQuestionIndex >= questions.length) {
-            // 更新进度到100%
-            progressBar.style.width = '100%';
-            progressText.textContent = '100%';
-            // 确保异步执行结果显示
-            setTimeout(showResult, 100);
-        } else {
+        // 如果不是最后一题，自动前进到下一题
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
             showQuestion();
-            updateProgress();
+        } else {
+            // 检查是否所有问题都已回答
+            if (!answers.includes(null)) {
+                progressBar.style.width = '100%';
+                progressText.textContent = '100%';
+                setTimeout(showResult, 100);
+            }
         }
+        
+        updateNavigationButtons();
     }
 
     // 事件监听器
     startButton.addEventListener('click', () => {
         showScreen(questionScreen);
         showQuestion();
+        initAnswerGrid();
     });
 
     optionButtons.forEach(button => {
         button.addEventListener('click', () => {
+            optionButtons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
             handleAnswer(button.dataset.value);
         });
+    });
+
+    prevButton.addEventListener('click', () => {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion();
+        }
+    });
+
+    nextButton.addEventListener('click', () => {
+        if (currentQuestionIndex < questions.length - 1 && answers[currentQuestionIndex] !== null) {
+            currentQuestionIndex++;
+            showQuestion();
+        }
     });
 
     restartButton.addEventListener('click', initTest);
