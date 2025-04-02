@@ -209,13 +209,19 @@ document.addEventListener('DOMContentLoaded', () => {
         resultType.textContent = result.type;
         resultDescription.textContent = types[result.type]?.description || '这是一个独特的性格组合！';
 
-        // 更新维度条 - 使用固定的最大值来计算百分比
-        const maxScore = 30; // 最大可能分数
+        // 更新维度条
         const updateBar = (barId, score) => {
             const bar = document.getElementById(barId);
-            // 将分数映射到0-100的范围
-            const percentage = ((score + maxScore) / (2 * maxScore)) * 100;
-            bar.style.width = `${Math.min(Math.max(percentage, 0), 100)}%`;
+            // 将分数转换为缩放比例（-1到1）
+            const scale = Math.min(Math.max(score / 20, -1), 1);
+            // 负分向左扩展，正分向右扩展
+            if (scale < 0) {
+                bar.style.left = '50%';
+                bar.style.transform = `scaleX(${-scale})`;
+            } else {
+                bar.style.left = '50%';
+                bar.style.transform = `scaleX(${scale})`;
+            }
         };
 
         updateBar('ie-bar', result.scores.IE);

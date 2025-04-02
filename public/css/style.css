@@ -196,6 +196,12 @@ main {
     grid-template-columns: 100px 1fr 100px;
     align-items: center;
     gap: 1rem;
+    text-align: center;
+}
+
+.dimension span {
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .bar-container {
@@ -203,13 +209,28 @@ main {
     background-color: var(--progress-bg);
     border-radius: 10px;
     overflow: hidden;
+    position: relative;
+}
+
+.bar-container::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: translateX(-50%);
 }
 
 .bar {
     height: 100%;
     width: 50%;
     background-color: var(--primary-color);
-    transition: width 0.3s ease;
+    position: absolute;
+    left: 50%;
+    transform-origin: left center;
+    transition: transform 0.3s ease;
 }
 
 footer {
