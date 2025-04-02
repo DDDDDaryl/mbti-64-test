@@ -120,10 +120,12 @@ main {
 }
 
 .btn:disabled {
-    background-color: var(--border-color);
+    background-color: #e9ecef;
+    color: #adb5bd;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+    opacity: 0.7;
 }
 
 .button-group {
@@ -329,6 +331,11 @@ footer a:hover {
 
 .nav-btn:hover:not(:disabled) {
     background-color: var(--text-color);
+}
+
+.nav-btn:disabled {
+    background-color: #e9ecef;
+    color: #adb5bd;
 }
 
 @media (max-width: 768px) {

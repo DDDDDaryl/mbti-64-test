@@ -78,13 +78,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // 更新导航按钮状态
     function updateNavigationButtons() {
         prevButton.disabled = currentQuestionIndex === 0;
-        // 只有当前题目已答且不是最后一题时，下一题按钮才可用
-        nextButton.disabled = answers[currentQuestionIndex] === null;
+        
         if (currentQuestionIndex === questions.length - 1) {
             nextButton.textContent = '完成测试';
-            nextButton.disabled = answers[currentQuestionIndex] === null;
+            // 在最后一题，只有所有题目都回答了才能完成测试
+            nextButton.disabled = answers.includes(null);
         } else {
             nextButton.textContent = '下一题';
+            // 只有当前题目已答才能进入下一题
+            nextButton.disabled = answers[currentQuestionIndex] === null;
         }
     }
 
@@ -124,17 +126,33 @@ document.addEventListener('DOMContentLoaded', () => {
             JP: 0  // 判断-知觉
         };
 
+        // 记录每个维度的问题数量
+        let counts = {
+            IE: 0,
+            SN: 0,
+            TF: 0,
+            JP: 0
+        };
+
         questions.forEach((question, index) => {
-            if (index < answers.length) {  // 确保只处理已回答的问题
-                const answer = answers[index];
+            if (answers[index] !== null) {
                 const dimension = question.dimension;
+                const answer = answers[index];
+                const score = answer - 2.5; // 将1-4转换为-1.5到1.5
+
                 if (question.direction === dimension[0]) {
-                    // 如果问题方向与维度的第一个字母相同（如E、S、T、J）
-                    scores[dimension] += (answer - 2.5) * 2;
+                    scores[dimension] += score;
                 } else {
-                    // 如果问题方向与维度的第二个字母相同（如I、N、F、P）
-                    scores[dimension] -= (answer - 2.5) * 2;
+                    scores[dimension] -= score;
                 }
+                counts[dimension]++;
+            }
+        });
+
+        // 计算每个维度的平均分并标准化
+        Object.keys(scores).forEach(dim => {
+            if (counts[dim] > 0) {
+                scores[dim] = (scores[dim] / counts[dim]) * 20; // 标准化到-20到20的范围
             }
         });
 
@@ -149,32 +167,29 @@ document.addEventListener('DOMContentLoaded', () => {
         // 生成基础类型
         const baseType = type.IE + type.SN + type.TF + type.JP;
         
-        // 根据分数强度确定子类型
-        const subTypes = {
-            'A': '自信型',
-            'T': '谨慎型',
-            'Sc': '系统型',
-            'Lo': '逻辑型'
-        };
-        
-        // 选择子类型（这里简单地根据分数绝对值选择）
-        const maxScore = Math.max(
-            Math.abs(scores.IE),
-            Math.abs(scores.SN),
-            Math.abs(scores.TF),
-            Math.abs(scores.JP)
-        );
-        
-        let subType;
-        if (maxScore > 20) subType = 'A';
-        else if (maxScore > 15) subType = 'T';
-        else if (maxScore > 10) subType = 'Sc';
-        else subType = 'Lo';
+        // 根据最显著的偏好确定子类型
+        const preferences = [
+            { dimension: 'IE', score: Math.abs(scores.IE) },
+            { dimension: 'SN', score: Math.abs(scores.SN) },
+            { dimension: 'TF', score: Math.abs(scores.TF) },
+            { dimension: 'JP', score: Math.abs(scores.JP) }
+        ].sort((a, b) => b.score - a.score);
 
-        const fullType = baseType + '-' + subType;
+        // 根据最强的偏好选择子类型
+        let subType;
+        const strongestScore = preferences[0].score;
+        if (strongestScore > 15) {
+            subType = 'A'; // 强烈偏好
+        } else if (strongestScore > 10) {
+            subType = 'T'; // 明显偏好
+        } else if (strongestScore > 5) {
+            subType = 'Sc'; // 中等偏好
+        } else {
+            subType = 'Lo'; // 轻微偏好
+        }
 
         return {
-            type: fullType,
+            type: baseType + '-' + subType,
             scores: scores
         };
     }
@@ -215,13 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProgress();
         updateAnswerGrid();
         updateNavigationButtons();
-        
-        // 如果是最后一题且所有题目都已回答，显示结果
-        if (currentQuestionIndex === questions.length - 1 && !answers.includes(null)) {
-            progressBar.style.width = '100%';
-            progressText.textContent = '100%';
-            setTimeout(showResult, 100);
-        }
     }
 
     // 事件监听器
@@ -247,19 +255,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     nextButton.addEventListener('click', () => {
-        if (answers[currentQuestionIndex] !== null) {
-            if (currentQuestionIndex === questions.length - 1) {
-                // 如果是最后一题，显示结果
-                if (!answers.includes(null)) {
-                    progressBar.style.width = '100%';
-                    progressText.textContent = '100%';
-                    setTimeout(showResult, 100);
-                }
-            } else {
-                // 否则前进到下一题
-                currentQuestionIndex++;
-                showQuestion();
+        if (currentQuestionIndex === questions.length - 1) {
+            // 如果是最后一题且所有题目都已回答，显示结果
+            if (!answers.includes(null)) {
+                progressBar.style.width = '100%';
+                progressText.textContent = '100%';
+                setTimeout(showResult, 100);
             }
+        } else if (answers[currentQuestionIndex] !== null) {
+            // 如果当前题目已答，前进到下一题
+            currentQuestionIndex++;
+            showQuestion();
         }
     });
 
