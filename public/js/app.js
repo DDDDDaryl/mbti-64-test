@@ -140,10 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const answer = answers[index];
                 const score = answer - 2.5; // 将1-4转换为-1.5到1.5
 
-                if (question.direction === dimension[0]) {
-                    scores[dimension] += score;
+                // 根据问题方向调整分数
+                // 如果方向是第二个字母(I/N/F/P)，分数为正表示偏向第二个字母
+                // 如果方向是第一个字母(E/S/T/J)，分数为正表示偏向第一个字母
+                if (question.direction === dimension[1]) {
+                    scores[dimension] += score; // 正分表示偏向第二个字母
                 } else {
-                    scores[dimension] -= score;
+                    scores[dimension] -= score; // 负分表示偏向第一个字母
                 }
                 counts[dimension]++;
             }
@@ -212,21 +215,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // 更新维度条
         const updateBar = (barId, score) => {
             const bar = document.getElementById(barId);
-            // 将分数转换为缩放比例（-1到1）
+            // 将分数转换为缩放比例（0到1）
             const scale = Math.min(Math.max(Math.abs(score) / 20, 0), 1);
             
             // 移除之前的方向类
             bar.classList.remove('left', 'right');
             
-            if (score < 0) {
-                // 负分，向左扩展（I/S/T/J）
-                bar.classList.add('left');
-                bar.style.transform = `scaleX(${scale})`;
-            } else {
-                // 正分，向右扩展（E/N/F/P）
+            // 正分表示偏向第二个字母（E/N/F/P），负分表示偏向第一个字母（I/S/T/J）
+            if (score > 0) {
                 bar.classList.add('right');
-                bar.style.transform = `scaleX(${scale})`;
+            } else {
+                bar.classList.add('left');
             }
+            bar.style.transform = `scaleX(${scale})`;
         };
 
         updateBar('ie-bar', result.scores.IE);
