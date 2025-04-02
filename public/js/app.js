@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function calculateResult() {
         // 计算每个维度的得分
         let scores = {
-            IE: 0, // 内向-外向
+            EI: 0, // 外向-内向
             SN: 0, // 感觉-直觉
             TF: 0, // 思考-情感
             JP: 0  // 判断-知觉
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 记录每个维度的问题数量
         let counts = {
-            IE: 0,
+            EI: 0,
             SN: 0,
             TF: 0,
             JP: 0
@@ -138,41 +138,42 @@ document.addEventListener('DOMContentLoaded', () => {
             if (answers[index] !== null) {
                 const dimension = question.dimension;
                 const answer = answers[index];
-                const score = answer - 2.5; // 将1-4转换为-1.5到1.5
-
-                // 根据问题方向调整分数
-                // 如果问题方向是第一个字母(E/S/T/J)，正分表示偏向第一个字母
-                // 如果问题方向是第二个字母(I/N/F/P)，负分表示偏向第二个字母
-                if (question.direction === dimension[0]) {
-                    scores[dimension] += score; // 正分表示偏向第一个字母
-                } else {
-                    scores[dimension] -= score; // 负分表示偏向第二个字母
-                }
+                // 将1-4转换为-1.5到1.5的分数
+                const rawScore = answer - 2.5;
+                
+                // 根据问题的方向调整分数
+                // 如果问题倾向于第一个字母（E/S/T/J），保持分数不变
+                // 如果问题倾向于第二个字母（I/N/F/P），反转分数
+                const score = question.direction === dimension[0] ? rawScore : -rawScore;
+                
+                // 累加分数
+                scores[dimension] += score;
                 counts[dimension]++;
             }
         });
 
-        // 计算每个维度的平均分并标准化
+        // 计算每个维度的平均分并标准化到-20到20的范围
         Object.keys(scores).forEach(dim => {
             if (counts[dim] > 0) {
-                scores[dim] = (scores[dim] / counts[dim]) * 20; // 标准化到-20到20的范围
+                scores[dim] = (scores[dim] / counts[dim]) * 20;
             }
         });
 
         // 确定每个维度的类型
+        // 正分表示第一个字母（E/S/T/J），负分表示第二个字母（I/N/F/P）
         const type = {
-            IE: scores.IE < 0 ? 'I' : 'E', // 负分表示I，正分表示E
-            SN: scores.SN < 0 ? 'S' : 'N', // 负分表示S，正分表示N
-            TF: scores.TF < 0 ? 'T' : 'F', // 负分表示T，正分表示F
-            JP: scores.JP < 0 ? 'J' : 'P'  // 负分表示J，正分表示P
+            EI: scores.EI > 0 ? 'E' : 'I',
+            SN: scores.SN > 0 ? 'S' : 'N',
+            TF: scores.TF > 0 ? 'T' : 'F',
+            JP: scores.JP > 0 ? 'J' : 'P'
         };
 
         // 生成基础类型
-        const baseType = type.IE + type.SN + type.TF + type.JP;
+        const baseType = type.EI + type.SN + type.TF + type.JP;
         
         // 根据最显著的偏好确定子类型
         const preferences = [
-            { dimension: 'IE', score: Math.abs(scores.IE) },
+            { dimension: 'EI', score: Math.abs(scores.EI) },
             { dimension: 'SN', score: Math.abs(scores.SN) },
             { dimension: 'TF', score: Math.abs(scores.TF) },
             { dimension: 'JP', score: Math.abs(scores.JP) }
@@ -221,16 +222,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // 移除之前的方向类
             bar.classList.remove('left', 'right');
             
-            // 负分表示第一个字母（I/S/T/J），正分表示第二个字母（E/N/F/P）
-            if (score < 0) {
-                bar.classList.add('left');
-            } else {
+            // 正分表示第一个字母（E/S/T/J），负分表示第二个字母（I/N/F/P）
+            if (score > 0) {
                 bar.classList.add('right');
+            } else {
+                bar.classList.add('left');
             }
             bar.style.transform = `scaleX(${scale})`;
         };
 
-        updateBar('ie-bar', result.scores.IE);
+        updateBar('ie-bar', result.scores.EI);
         updateBar('sn-bar', result.scores.SN);
         updateBar('tf-bar', result.scores.TF);
         updateBar('jp-bar', result.scores.JP);
