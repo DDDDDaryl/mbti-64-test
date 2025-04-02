@@ -49,17 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 处理答案选择
     function handleAnswer(value) {
-        answers.push(value);
+        answers.push(parseInt(value));
         currentQuestionIndex++;
-
-        if (currentQuestionIndex < questions.length) {
-            showQuestion();
-            updateProgress();
-        } else {
-            // 确保在显示结果之前更新进度条到100%
+        
+        if (currentQuestionIndex >= questions.length) {
             progressBar.style.width = '100%';
             progressText.textContent = '100%';
             showResult();
+        } else {
+            showQuestion();
+            updateProgress();
         }
     }
 
@@ -134,8 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const resultType = document.getElementById('result-type');
         const resultDescription = document.getElementById('result-description');
         
-        resultType.textContent = result.type;
-        resultDescription.textContent = types[result.type].description;
+        if (types[result.type]) {
+            resultType.textContent = result.type;
+            resultDescription.textContent = types[result.type].description || '暂无详细描述';
+        } else {
+            resultType.textContent = result.type;
+            resultDescription.textContent = '这是一个独特的性格组合！';
+        }
 
         // 更新维度条
         updateDimensionBar('ie-bar', result.scores.IE);
@@ -161,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     optionButtons.forEach(button => {
         button.addEventListener('click', () => {
-            handleAnswer(parseInt(button.dataset.value));
+            handleAnswer(button.dataset.value);
         });
     });
 
