@@ -141,12 +141,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const score = answer - 2.5; // 将1-4转换为-1.5到1.5
 
                 // 根据问题方向调整分数
-                // 如果方向是第二个字母(I/N/F/P)，分数为正表示偏向第二个字母
-                // 如果方向是第一个字母(E/S/T/J)，分数为正表示偏向第一个字母
-                if (question.direction === dimension[1]) {
-                    scores[dimension] += score; // 正分表示偏向第二个字母
+                // 如果问题方向是第一个字母(E/S/T/J)，正分表示偏向第一个字母
+                // 如果问题方向是第二个字母(I/N/F/P)，负分表示偏向第二个字母
+                if (question.direction === dimension[0]) {
+                    scores[dimension] += score; // 正分表示偏向第一个字母
                 } else {
-                    scores[dimension] -= score; // 负分表示偏向第一个字母
+                    scores[dimension] -= score; // 负分表示偏向第二个字母
                 }
                 counts[dimension]++;
             }
@@ -161,10 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 确定每个维度的类型
         const type = {
-            IE: scores.IE > 0 ? 'E' : 'I',
-            SN: scores.SN > 0 ? 'N' : 'S',
-            TF: scores.TF > 0 ? 'F' : 'T',
-            JP: scores.JP > 0 ? 'P' : 'J'
+            IE: scores.IE < 0 ? 'I' : 'E', // 负分表示I，正分表示E
+            SN: scores.SN < 0 ? 'S' : 'N', // 负分表示S，正分表示N
+            TF: scores.TF < 0 ? 'T' : 'F', // 负分表示T，正分表示F
+            JP: scores.JP < 0 ? 'J' : 'P'  // 负分表示J，正分表示P
         };
 
         // 生成基础类型
@@ -221,11 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // 移除之前的方向类
             bar.classList.remove('left', 'right');
             
-            // 正分表示偏向第二个字母（E/N/F/P），负分表示偏向第一个字母（I/S/T/J）
-            if (score > 0) {
-                bar.classList.add('right');
-            } else {
+            // 负分表示第一个字母（I/S/T/J），正分表示第二个字母（E/N/F/P）
+            if (score < 0) {
                 bar.classList.add('left');
+            } else {
+                bar.classList.add('right');
             }
             bar.style.transform = `scaleX(${scale})`;
         };
