@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI-64 性格测试</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MBTI-64 性格测试</h1>
+            <p class="description">这是一个扩展版的MBTI测试，它将16种性格类型细分为64种子类型。通过回答以下问题，了解你的详细性格类型。</p>
+        </header>
+
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+            <div id="progress-text">0%</div>
+        </div>
+
+        <main>
+            <div id="welcome-screen" class="screen active">
+                <h2>欢迎参加MBTI-64测试</h2>
+                <p>本测试包含60个问题，预计需要15-20分钟完成。</p>
+                <p>请选择最符合你真实想法的选项，不要过多思考。</p>
+                <button id="start-test" class="btn">开始测试</button>
+            </div>
+
+            <div id="question-screen" class="screen">
+                <div id="question-container">
+                    <!-- 问题将通过JavaScript动态加载 -->
+                </div>
+                <div class="button-group">
+                    <button class="btn option-btn" data-value="1">完全不同意</button>
+                    <button class="btn option-btn" data-value="2">比较不同意</button>
+                    <button class="btn option-btn" data-value="3">比较同意</button>
+                    <button class="btn option-btn" data-value="4">完全同意</button>
+                </div>
+            </div>
+
+            <div id="result-screen" class="screen">
+                <h2>你的MBTI-64类型是：</h2>
+                <div id="result-type" class="result-box"></div>
+                <div id="result-description"></div>
+                <div class="result-details">
+                    <div class="dimension-bars">
+                        <div class="dimension">
+                            <span>内向 (I)</span>
+                            <div class="bar-container">
+                                <div class="bar" id="ie-bar"></div>
+                            </div>
+                            <span>外向 (E)</span>
+                        </div>
+                        <div class="dimension">
+                            <span>感觉 (S)</span>
+                            <div class="bar-container">
+                                <div class="bar" id="sn-bar"></div>
+                            </div>
+                            <span>直觉 (N)</span>
+                        </div>
+                        <div class="dimension">
+                            <span>思考 (T)</span>
+                            <div class="bar-container">
+                                <div class="bar" id="tf-bar"></div>
+                            </div>
+                            <span>情感 (F)</span>
+                        </div>
+                        <div class="dimension">
+                            <span>判断 (J)</span>
+                            <div class="bar-container">
+                                <div class="bar" id="jp-bar"></div>
+                            </div>
+                            <span>知觉 (P)</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="restart-test" class="btn">重新测试</button>
+                <button id="share-result" class="btn">分享结果</button>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2024 MBTI-64 测试 | <a href="https://github.com/DDDDDaryl/mbti-64-test" target="_blank">GitHub</a></p>
+        </footer>
+    </div>
+    <script src="js/questions.js"></script>
+    <script src="js/types.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html> 
