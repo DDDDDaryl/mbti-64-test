@@ -213,13 +213,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const updateBar = (barId, score) => {
             const bar = document.getElementById(barId);
             // 将分数转换为缩放比例（-1到1）
-            const scale = Math.min(Math.max(score / 20, -1), 1);
-            // 负分向左扩展，正分向右扩展
-            if (scale < 0) {
-                bar.style.left = '50%';
-                bar.style.transform = `scaleX(${-scale})`;
+            const scale = Math.min(Math.max(Math.abs(score) / 20, 0), 1);
+            
+            // 移除之前的方向类
+            bar.classList.remove('left', 'right');
+            
+            if (score < 0) {
+                // 负分，向左扩展（I/S/T/J）
+                bar.classList.add('left');
+                bar.style.transform = `scaleX(${scale})`;
             } else {
-                bar.style.left = '50%';
+                // 正分，向右扩展（E/N/F/P）
+                bar.classList.add('right');
                 bar.style.transform = `scaleX(${scale})`;
             }
         };

@@ -228,9 +228,17 @@ main {
     width: 50%;
     background-color: var(--primary-color);
     position: absolute;
+    transition: all 0.3s ease;
+}
+
+.bar.left {
+    right: 50%;
+    transform-origin: right center;
+}
+
+.bar.right {
     left: 50%;
     transform-origin: left center;
-    transition: transform 0.3s ease;
 }
 
 footer {
