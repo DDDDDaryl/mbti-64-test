@@ -47,21 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    // 处理答案选择
-    function handleAnswer(value) {
-        answers.push(parseInt(value));
-        currentQuestionIndex++;
-        
-        if (currentQuestionIndex >= questions.length) {
-            progressBar.style.width = '100%';
-            progressText.textContent = '100%';
-            showResult();
-        } else {
-            showQuestion();
-            updateProgress();
-        }
-    }
-
     // 计算结果
     function calculateResult() {
         // 计算每个维度的得分
@@ -130,31 +115,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // 显示结果
     function showResult() {
         const result = calculateResult();
+        
+        // 先切换到结果页面
+        showScreen(resultScreen);
+        
+        // 然后更新结果内容
         const resultType = document.getElementById('result-type');
         const resultDescription = document.getElementById('result-description');
         
-        if (types[result.type]) {
-            resultType.textContent = result.type;
-            resultDescription.textContent = types[result.type].description || '暂无详细描述';
-        } else {
-            resultType.textContent = result.type;
-            resultDescription.textContent = '这是一个独特的性格组合！';
-        }
+        // 设置类型和描述
+        resultType.textContent = result.type;
+        resultDescription.textContent = types[result.type]?.description || '这是一个独特的性格组合！';
 
-        // 更新维度条
-        updateDimensionBar('ie-bar', result.scores.IE);
-        updateDimensionBar('sn-bar', result.scores.SN);
-        updateDimensionBar('tf-bar', result.scores.TF);
-        updateDimensionBar('jp-bar', result.scores.JP);
+        // 更新维度条 - 使用固定的最大值来计算百分比
+        const maxScore = 30; // 最大可能分数
+        const updateBar = (barId, score) => {
+            const bar = document.getElementById(barId);
+            // 将分数映射到0-100的范围
+            const percentage = ((score + maxScore) / (2 * maxScore)) * 100;
+            bar.style.width = `${Math.min(Math.max(percentage, 0), 100)}%`;
+        };
 
-        showScreen(resultScreen);
+        updateBar('ie-bar', result.scores.IE);
+        updateBar('sn-bar', result.scores.SN);
+        updateBar('tf-bar', result.scores.TF);
+        updateBar('jp-bar', result.scores.JP);
     }
 
-    // 更新维度条显示
-    function updateDimensionBar(barId, score) {
-        const bar = document.getElementById(barId);
-        const percentage = (score + 30) / 60 * 100; // 假设分数范围是-30到30
-        bar.style.width = `${percentage}%`;
+    // 处理答案选择
+    function handleAnswer(value) {
+        answers.push(parseInt(value));
+        currentQuestionIndex++;
+        
+        if (currentQuestionIndex >= questions.length) {
+            // 更新进度到100%
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
+            // 确保异步执行结果显示
+            setTimeout(showResult, 100);
+        } else {
+            showQuestion();
+            updateProgress();
+        }
     }
 
     // 事件监听器
