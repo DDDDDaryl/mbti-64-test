@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
             showQuestion();
             updateProgress();
         } else {
+            // 确保在显示结果之前更新进度条到100%
+            progressBar.style.width = '100%';
+            progressText.textContent = '100%';
             showResult();
         }
     }
@@ -71,9 +74,17 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         questions.forEach((question, index) => {
-            const answer = answers[index];
-            const dimension = question.dimension;
-            scores[dimension] += (answer - 2.5) * 2; // 将1-4分转换为-3到3分
+            if (index < answers.length) {  // 确保只处理已回答的问题
+                const answer = answers[index];
+                const dimension = question.dimension;
+                if (question.direction === dimension[0]) {
+                    // 如果问题方向与维度的第一个字母相同（如E、S、T、J）
+                    scores[dimension] += (answer - 2.5) * 2;
+                } else {
+                    // 如果问题方向与维度的第二个字母相同（如I、N、F、P）
+                    scores[dimension] -= (answer - 2.5) * 2;
+                }
+            }
         });
 
         // 确定每个维度的类型
@@ -84,8 +95,35 @@ document.addEventListener('DOMContentLoaded', () => {
             JP: scores.JP > 0 ? 'P' : 'J'
         };
 
+        // 生成基础类型
+        const baseType = type.IE + type.SN + type.TF + type.JP;
+        
+        // 根据分数强度确定子类型
+        const subTypes = {
+            'A': '自信型',
+            'T': '谨慎型',
+            'Sc': '系统型',
+            'Lo': '逻辑型'
+        };
+        
+        // 选择子类型（这里简单地根据分数绝对值选择）
+        const maxScore = Math.max(
+            Math.abs(scores.IE),
+            Math.abs(scores.SN),
+            Math.abs(scores.TF),
+            Math.abs(scores.JP)
+        );
+        
+        let subType;
+        if (maxScore > 20) subType = 'A';
+        else if (maxScore > 15) subType = 'T';
+        else if (maxScore > 10) subType = 'Sc';
+        else subType = 'Lo';
+
+        const fullType = baseType + '-' + subType;
+
         return {
-            type: type.IE + type.SN + type.TF + type.JP,
+            type: fullType,
             scores: scores
         };
     }
